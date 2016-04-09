@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by tj on 4/5/16.
@@ -19,10 +20,10 @@ public class SendingThread extends Thread {
     private static final String TAG = "SendingThread";
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
-    Queue<String> msgs;
+    ConcurrentLinkedQueue<String> msgs;
     Boolean sending;
 
-    SendingThread(Socket s, Queue<String> msgTo,Boolean send){
+    SendingThread(Socket s, ConcurrentLinkedQueue<String> msgTo,Boolean send){
         socket=s;
         msgs = msgTo;
         sending=send;

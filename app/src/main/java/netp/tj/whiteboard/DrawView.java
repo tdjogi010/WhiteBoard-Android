@@ -161,7 +161,7 @@ public class DrawView extends View  {
                 invalidate();
 
                 //send it
-                drawViewListener.OnDrawn(x,y);
+                drawViewListener.OnDrawn(false, x,y);
                 break;
             case MotionEvent.ACTION_MOVE:
                 /*
@@ -182,7 +182,7 @@ public class DrawView extends View  {
                 touch_up(mX,mY);
                 invalidate();
                 //send it
-                drawViewListener.OnDrawn(x,y);
+                drawViewListener.OnDrawn(true, x,y);
                 break;
         }
         return true;
@@ -190,7 +190,8 @@ public class DrawView extends View  {
 
     void simulateDraw(float oldx,float oldy,float newx,float newy){
         Log.d(TAG,"simulating"+oldx+" "+oldy+" "+newx+" "+newy);
-        touch_move(oldx,oldy,newx,newy);
+        //touch_move(oldx,oldy,newx,newy);
+        touch_move(newx,newy,oldx,oldy);
         invalidate();
 
     }

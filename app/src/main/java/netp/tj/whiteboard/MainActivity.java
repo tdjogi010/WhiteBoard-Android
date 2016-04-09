@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends Activity {
 
@@ -19,7 +20,7 @@ public class MainActivity extends Activity {
     Boolean receiving,sending;
     Socket socket;
     int whichsocket;
-    Queue<String> queue=new LinkedList<String>();
+    ConcurrentLinkedQueue<String> queue=new ConcurrentLinkedQueue<>();
     DrawViewListener drawViewListener;
     DrawView drawView;
     int startorrend=0;
@@ -53,8 +54,14 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void OnDrawn(float x, float y) {
+            public void OnDrawn(boolean startOrEnd, float x, float y) {
+
                 String msg=x+" "+y;
+                if(startOrEnd){
+                    msg += " e";
+                }else{
+                    msg += " s";
+                }
                 queue.add(msg);
             }
         };
@@ -76,8 +83,8 @@ public class MainActivity extends Activity {
                 if(arr.length==4){
 
                     drawView.simulateDraw(Float.parseFloat(arr[0]),Float.parseFloat(arr[1]),Float.parseFloat(arr[2]),Float.parseFloat(arr[3]));
-                }else if (arr.length==2){
-                    if (startorrend==0){
+                }else if (arr.length==3){
+                    if (arr[2].equals("s")){
                         drawView.simulateStart(Float.parseFloat(arr[0]),Float.parseFloat(arr[1]));
                         startorrend=1;
                     }else{

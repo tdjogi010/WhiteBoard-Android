@@ -130,7 +130,7 @@ public class DrawView extends View  {
      * Stop drawing once finger lifted
      */
     private void touch_up(float mX,float mY) {
-        mPath.lineTo(mX, mY);
+        //mPath.lineTo(mX, mY);
 
 
         Log.d(TAG, "Touch_end : " + mX + "," + mY);

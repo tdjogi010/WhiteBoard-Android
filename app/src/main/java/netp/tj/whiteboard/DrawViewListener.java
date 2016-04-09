@@ -5,5 +5,5 @@ package netp.tj.whiteboard;
  */
 interface DrawViewListener {
     void OnDrawn(float oldx,float oldy,float newx,float newy);
-    void OnDrawn(float x,float y);
+    void OnDrawn(boolean startOrEnd, float x,float y);
 }

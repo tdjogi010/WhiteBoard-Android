@@ -17,16 +17,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by tj on 4/5/16.
  */
 public class SendingThread extends Thread {
+
     private static final String TAG = "SendingThread";
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
     ConcurrentLinkedQueue<String> msgs;
-    Boolean sending;
 
-    SendingThread(Socket s, ConcurrentLinkedQueue<String> msgTo,Boolean send){
+    SendingThread(Socket s, ConcurrentLinkedQueue<String> msgTo){
         socket=s;
         msgs = msgTo;
-        sending=send;
     }
 
     @Override
@@ -36,36 +35,30 @@ public class SendingThread extends Thread {
                     socket.getOutputStream());
 
         } catch (UnknownHostException e) {
-            e.printStackTrace();
-            //response = "UnknownHostException: " + e.toString();
+            Log.i(TAG, e.getMessage());
             return;
         } catch (IOException e) {
-            e.printStackTrace();
-            //response = "IOException: " + e.toString();
+            Log.i(TAG, e.getMessage());
             return;
         }
         try {
-        while (sending) {
+        while (true) {
                 try {
                     if (!msgs.isEmpty()) {
                         String msg = msgs.remove();
                         if (msg != null) {
                             dataOutputStream.writeUTF(msg);
-                            Log.d(TAG, msg);
+                            Log.d(TAG, "WriteUTF :" + msg);
                         }
-                        //sending=false;//remove
                     }
                 }catch (NoSuchElementException e){
                     //e.printStackTrace();
                     //lite
-                }catch (NullPointerException e){
+                }catch (NullPointerException e) {
                     //e.printStackTrace();
                     //lite
                 }
-
-
             }
-
 
         } catch (IOException e) {
                 e.printStackTrace();

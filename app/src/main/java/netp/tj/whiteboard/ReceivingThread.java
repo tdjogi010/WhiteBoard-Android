@@ -3,37 +3,35 @@ package netp.tj.whiteboard;
 import android.app.Activity;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import netp.tj.whiteboard.event.SimulateDrawingEvent;
+
 /**
  * Created by tj on 4/5/16.
  */
 public class ReceivingThread extends Thread {
+
     private static final String TAG = "ReceivingThread";
     Socket socket = null;
     DataInputStream dataInputStream = null;
-    OnActivityInteractionListerner mlisterner;
-    Boolean receiving;
     Activity mActivity;
     String response = "";
 
-    ReceivingThread(Socket s, OnActivityInteractionListerner l, Boolean r, Activity activity){
+    ReceivingThread(Socket s, Activity activity){
         socket=s;
-        mlisterner=l;
-        receiving=r;
         mActivity=activity;
     }
     @Override
     public void run() {
         try {
-            //socket = new Socket(dstAddress, dstPort);
             dataInputStream = new DataInputStream(socket.getInputStream());
-
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,24 +39,33 @@ public class ReceivingThread extends Thread {
         }
 
         try {
-            while (receiving) {
+            while (true) {
                 response = dataInputStream.readUTF();
-                //receiving=false;//remove
-                Log.d(TAG,response);
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mlisterner.onReceived(response);
+
+                Log.d(TAG,"ReadUTF response :" + response);
+
+                String[] arr= response.split(" ");
+                if (arr.length == 4){
+                    EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_MOVE,
+                            Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
+                            Float.parseFloat(arr[2]),Float.parseFloat(arr[3])));
+                }else if (arr.length == 3){
+                    if (arr[2].equals("s")){
+                        EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_START,
+                                Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
+                                0.0f, 0.0f));
+                    }else{
+                        EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_END,
+                                Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
+                                0.0f, 0.0f));
                     }
-                });
+                }
 
             }
         } catch (UnknownHostException e) {
-            e.printStackTrace();
-            //response = "UnknownHostException: " + e.toString();
+            Log.i(TAG, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
-            //response = "IOException: " + e.toString();
+            Log.i(TAG, e.getMessage());
         } finally {
             Log.d(TAG,"Closing everthing");
             if (socket != null) {
@@ -74,7 +81,6 @@ public class ReceivingThread extends Thread {
                 try {
                     dataInputStream.close();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }

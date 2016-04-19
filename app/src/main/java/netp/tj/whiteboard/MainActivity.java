@@ -5,6 +5,16 @@ import android.graphics.Paint;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,21 +22,27 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MainActivity extends Activity {
+import netp.tj.whiteboard.event.SimulateDrawingEvent;
+
+public class MainActivity extends Activity implements AdapterView.OnItemSelectedListener{
 
     private static final String TAG = "MainActivity";
     Paint mPaint;
-    OnActivityInteractionListerner rlistener;
-    Boolean receiving,sending;
     Socket socket;
     int whichsocket;
     ConcurrentLinkedQueue<String> queue=new ConcurrentLinkedQueue<>();
     DrawViewListener drawViewListener;
     DrawView drawView;
-    int startorrend=0;
+
+    /*Spinner spinner_color;
+    Spinner spinner_text_size;*/
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
         whichsocket=getIntent().getIntExtra("socket",-1);
 
         //need a better way
@@ -44,6 +60,8 @@ public class MainActivity extends Activity {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(12);
+
+
         drawViewListener= new DrawViewListener() {
             @Override
             public void OnDrawn(float oldx, float oldy, float newx, float newy) {
@@ -66,54 +84,91 @@ public class MainActivity extends Activity {
             }
         };
         drawView= new DrawView(this,mPaint,drawViewListener);
+        ((FrameLayout) findViewById(R.id.main_ll)).addView(drawView, 0);
 
-        setContentView(drawView);
+        /*spinner_text_size = (Spinner)findViewById(R.id.spinner_text_size);
+        spinner_color = (Spinner)findViewById(R.id.spinner_color);
 
-        rlistener = new OnActivityInteractionListerner() {
-            @Override
-            public void onSent() {
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> color_adapter = ArrayAdapter.createFromResource(this,
+                R.array.spinner_color_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        color_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner_color.setAdapter(color_adapter);
 
-            }
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> text_size_adapter = ArrayAdapter.createFromResource(this,
+                R.array.spinner_text_size_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        text_size_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner_text_size.setAdapter(text_size_adapter);
 
-            @Override
-            public void onReceived(String response) {
-                //textResponse.setText(response);
-                //parse it and give to drawing
-                String[] arr= response.split(" ");
-                if(arr.length==4){
-
-                    drawView.simulateDraw(Float.parseFloat(arr[0]),Float.parseFloat(arr[1]),Float.parseFloat(arr[2]),Float.parseFloat(arr[3]));
-                }else if (arr.length==3){
-                    if (arr[2].equals("s")){
-                        drawView.simulateStart(Float.parseFloat(arr[0]),Float.parseFloat(arr[1]));
-                        startorrend=1;
-                    }else{
-
-                        drawView.simulateEnd(Float.parseFloat(arr[0]),Float.parseFloat(arr[1]));
-                        startorrend=0;
-                    }
-
-                }
-
-
-            }
-
-        };
+        spinner_color.setOnItemSelectedListener(this);
+        spinner_text_size.setOnItemSelectedListener(this);*/
 
         startReceiving();
         startSending();
 
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+       /* Log.d(TAG, "Selected at id: "+ id + " and position : " + position);
+
+        if(parent != null){
+            Log.d(TAG, "Spinner not null");
+            switch (parent.getId()){
+                case R.id.spinner_color:
+                    String color = (String) parent.getItemAtPosition(position);
+                    Toast.makeText(this, "Selected " + color, Toast.LENGTH_SHORT).show();
+                    break;
+
+                case R.id.spinner_text_size:
+                    String size = (String) parent.getItemAtPosition(position);
+                    Toast.makeText(this, "Selected " + size, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }*/
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
     void startReceiving(){
-        receiving=true;
-        ReceivingThread rthread= new ReceivingThread(socket,rlistener,receiving,MainActivity.this);
+        ReceivingThread rthread= new ReceivingThread(socket, MainActivity.this);
         rthread.start();
     }
 
     void startSending(){
-        sending=true;
-        SendingThread sthread= new SendingThread(socket,queue,sending);
+        SendingThread sthread= new SendingThread(socket, queue);
         sthread.start();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void simulateDrawing(SimulateDrawingEvent event){
+        if (event.getMode() == SimulateDrawingEvent.SIMULATE_MOVE){
+            drawView.simulateDraw(event.getCoord1(), event.getCoord2(), event.getCoord3(), event.getCoord4());
+        } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_START){
+            drawView.simulateStart(event.getCoord1(), event.getCoord2());
+        } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_END){
+            drawView.simulateEnd(event.getCoord1(), event.getCoord2());
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 }

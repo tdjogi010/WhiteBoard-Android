@@ -1,6 +1,7 @@
 package netp.tj.whiteboard;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -28,14 +30,15 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
     private static final String TAG = "MainActivity";
     Paint mPaint;
+    Paint mPaint_receiver;
     Socket socket;
     int whichsocket;
     ConcurrentLinkedQueue<String> queue=new ConcurrentLinkedQueue<>();
     DrawViewListener drawViewListener;
     DrawView drawView;
 
-    /*Spinner spinner_color;
-    Spinner spinner_text_size;*/
+    Spinner spinner_color;
+    Spinner spinner_text_size;
 
 
     @Override
@@ -55,11 +58,20 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setDither(true);
-        mPaint.setColor(0xFFFF0000);
+        mPaint.setColor(Color.RED);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(12);
+
+        mPaint_receiver = new Paint();
+        mPaint_receiver.setAntiAlias(true);
+        mPaint_receiver.setDither(true);
+        mPaint_receiver.setColor(Color.RED);
+        mPaint_receiver.setStyle(Paint.Style.STROKE);
+        mPaint_receiver.setStrokeJoin(Paint.Join.ROUND);
+        mPaint_receiver.setStrokeCap(Paint.Cap.ROUND);
+        mPaint_receiver.setStrokeWidth(12);
 
 
         drawViewListener= new DrawViewListener() {
@@ -83,10 +95,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                 queue.add(msg);
             }
         };
-        drawView= new DrawView(this,mPaint,drawViewListener);
+        drawView= new DrawView(this, mPaint, mPaint_receiver, drawViewListener);
         ((FrameLayout) findViewById(R.id.main_ll)).addView(drawView, 0);
 
-        /*spinner_text_size = (Spinner)findViewById(R.id.spinner_text_size);
+        spinner_text_size = (Spinner)findViewById(R.id.spinner_text_size);
         spinner_color = (Spinner)findViewById(R.id.spinner_color);
 
         // Create an ArrayAdapter using the string array and a default spinner layout
@@ -106,7 +118,21 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         spinner_text_size.setAdapter(text_size_adapter);
 
         spinner_color.setOnItemSelectedListener(this);
-        spinner_text_size.setOnItemSelectedListener(this);*/
+        spinner_text_size.setOnItemSelectedListener(this);
+
+        spinner_color.setSelection(0);
+        spinner_text_size.setSelection(8);
+
+//        HashMap<String, Integer> colors_map = new HashMap<>();
+//        colors_map.put("Red", Color.RED);
+//        colors_map.put("Green", Color.GREEN);
+//        colors_map.put("Blue" , Color.BLUE);
+//        colors_map.put("Yellow", Color.YELLOW);
+//        colors_map.put("Magenta", Color.MAGENTA);
+//        colors_map.put("Cyan", Color.CYAN);
+//        colors_map.put("Gray", Color.GRAY);
+//        colors_map.put("Black", Color.BLACK);
+
 
         startReceiving();
         startSending();
@@ -115,22 +141,30 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-       /* Log.d(TAG, "Selected at id: "+ id + " and position : " + position);
+        Log.d(TAG, "Selected at id: "+ id + " and position : " + position);
 
         if(parent != null){
             Log.d(TAG, "Spinner not null");
             switch (parent.getId()){
                 case R.id.spinner_color:
                     String color = (String) parent.getItemAtPosition(position);
-                    Toast.makeText(this, "Selected " + color, Toast.LENGTH_SHORT).show();
+                    String colors[] = getResources().getStringArray(R.array.spinner_color_array);
+
+                    for (String c: colors){
+                        if(c.toLowerCase().equals(color.toLowerCase())){
+                            mPaint.setColor(Color.parseColor(c.toLowerCase()));
+                        }
+                    }
                     break;
 
                 case R.id.spinner_text_size:
                     String size = (String) parent.getItemAtPosition(position);
                     Toast.makeText(this, "Selected " + size, Toast.LENGTH_SHORT).show();
+
+                    mPaint.setStrokeWidth(Float.parseFloat(size));
                     break;
             }
-        }*/
+        }
 
     }
 

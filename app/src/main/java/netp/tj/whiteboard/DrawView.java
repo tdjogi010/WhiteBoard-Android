@@ -28,6 +28,12 @@ public class DrawView extends View  {
      * Path to draw
      */
     private Path mPath;
+
+    /*
+     * Path to draw for receiver
+     */
+    private Path mPath_receiver;
+
     /*
      * Paint (to describe the colors and styles for the drawing) for Bitmap
      */
@@ -37,10 +43,22 @@ public class DrawView extends View  {
      * Paint (to describe the colors and styles for the drawing) for Path
      */
     private Paint mPaint;
+
+    /*
+     * Paint (to describe the colors and styles for the drawing) for Path for receiver
+     */
+    private Paint mPaint_receiver;
+
     /*
      * Hold coordinates of previous touch
      */
+
     private float mX, mY;
+    /*
+     * Tolerance value for touch events (in pixels)
+     */
+
+    private float mX_receiver, mY_receiver;
     /*
      * Tolerance value for touch events (in pixels)
      */
@@ -48,10 +66,12 @@ public class DrawView extends View  {
 
     DrawViewListener drawViewListener;
 
-    public DrawView(Context context,Paint mPaint,DrawViewListener dl) {
+    public DrawView(Context context,Paint mPaint, Paint mPaint_receiver, DrawViewListener dl) {
         super(context);
         mPath = new Path();
+        mPath_receiver = new Path();
         this.mPaint = mPaint;
+        this.mPaint_receiver = mPaint_receiver;
         mBitmapPaint = new Paint(Paint.DITHER_FLAG);
         drawViewListener=dl;
         setFocusable(true);
@@ -88,6 +108,7 @@ public class DrawView extends View  {
          * Draw path on the canvas
          */
         canvas.drawPath(mPath, mPaint);
+        canvas.drawPath(mPath_receiver, mPaint_receiver);
     }
 
 
@@ -190,214 +211,70 @@ public class DrawView extends View  {
 
     void simulateDraw(float oldx,float oldy,float newx,float newy){
         Log.d(TAG,"simulating"+oldx+" "+oldy+" "+newx+" "+newy);
-        //touch_move(oldx,oldy,newx,newy);
-        touch_move(newx,newy,oldx,oldy);
+        simulateTouchMove(newx,newy,oldx,oldy);
         invalidate();
 
     }
 
     void simulateStart(float x,float y){
         Log.d(TAG,"simulating start "+x+" "+y);
-        touch_start(x,y);
+        simulateTouchStart(x,y);
         invalidate();
 
     }
 
     void simulateEnd(float x, float y){
         Log.d(TAG,"simulating end"+x+" "+y);
-        touch_up(x,y);
+        simulateTouchUp(x,y);
         invalidate();
     }
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * TODO: document your custom view class.
- *//*
-public class DrawView extends View {
-    private String mExampleString; // TODO: use a default from R.string...
-    private int mExampleColor = Color.RED; // TODO: use a default from R.color...
-    private float mExampleDimension = 0; // TODO: use a default from R.dimen...
-    private Drawable mExampleDrawable;
-
-    private TextPaint mTextPaint;
-    private float mTextWidth;
-    private float mTextHeight;
-
-    public DrawView(Context context) {
-        super(context);
-        init(null, 0);
+    /**
+     * Start of drawing upon touch. Function reused in both Craete & Open Mode
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    private void simulateTouchStart(float x, float y) {
+        //Log.d(TAG,"Touch_start : " + x + ","+ y + "  " + mX + "," + mY);
+        mPath_receiver.reset();
+        mPath_receiver.moveTo(x, y);
+        mX_receiver = x;
+        mY_receiver = y;
     }
 
-    public DrawView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(attrs, 0);
+    /**
+     * Continue drawing. Function reused for both Create & Open Mode
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    private void simulateTouchMove(float x, float y,float mmX,float mmY) {
+
+        float dx = Math.abs(x - mmX);
+        float dy = Math.abs(y - mmY);
+        //if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {//undo it maybe
+        //Make bezier curve through the points
+        mPath_receiver.quadTo(mX_receiver, mY_receiver, (x + mX_receiver)/2, (y + mY_receiver)/2);
+        mX_receiver = x;
+        mY_receiver = y;
+        //Log.d(TAG,"Touch_move : " + x + ","+ y + "  " + mX + "," + mY);
+
+
+        //}
     }
 
-    public DrawView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(attrs, defStyle);
-    }
+    /**
+     * Stop drawing once finger lifted
+     */
+    private void simulateTouchUp(float mX,float mY) {
+        //mPath.lineTo(mX, mY);
 
-    private void init(AttributeSet attrs, int defStyle) {
-        // Load attributes
-        final TypedArray a = getContext().obtainStyledAttributes(
-                attrs, R.styleable.DrawView, defStyle, 0);
 
-        mExampleString = getContext().getString(R.string.exampleString);
-        mExampleColor = a.getColor(
-                R.styleable.DrawView_exampleColor,
-                mExampleColor);
-        // Use getDimensionPixelSize or getDimensionPixelOffset when dealing with
-        // values that should fall on pixel boundaries.
-        mExampleDimension = a.getDimension(
-                R.styleable.DrawView_exampleDimension,
-                mExampleDimension);
+        Log.d(TAG, "Touch_end : " + mX + "," + mY);
 
-        if (a.hasValue(R.styleable.DrawView_exampleDrawable)) {
-            mExampleDrawable = a.getDrawable(
-                    R.styleable.DrawView_exampleDrawable);
-            mExampleDrawable.setCallback(this);
-        }
-
-        a.recycle();
-
-        // Set up a default TextPaint object
-        mTextPaint = new TextPaint();
-        mTextPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
-        mTextPaint.setTextAlign(Paint.Align.LEFT);
-
-        // Update TextPaint and text measurements from attributes
-        invalidateTextPaintAndMeasurements();
-    }
-
-    private void invalidateTextPaintAndMeasurements() {
-        mTextPaint.setTextSize(mExampleDimension);
-        mTextPaint.setColor(mExampleColor);
-
-        mTextWidth = mTextPaint.measureText(mExampleString);
-
-        Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
-        mTextHeight = fontMetrics.bottom;
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        // TODO: consider storing these as member variables to reduce
-        // allocations per draw cycle.
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
-
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
-
-        // Draw the text.
-        canvas.drawText(mExampleString,
-                paddingLeft + (contentWidth - mTextWidth) / 2,
-                paddingTop + (contentHeight + mTextHeight) / 2,
-                mTextPaint);
-
-        // Draw the example drawable on top of the text.
-        if (mExampleDrawable != null) {
-            mExampleDrawable.setBounds(paddingLeft, paddingTop,
-                    paddingLeft + contentWidth, paddingTop + contentHeight);
-            mExampleDrawable.draw(canvas);
-        }
-    }
-
-    *//**
-     * Gets the example string attribute value.
-     *
-     * @return The example string attribute value.
-     *//*
-    public String getExampleString() {
-        return mExampleString;
-    }
-
-    *//**
-     * Sets the view's example string attribute value. In the example view, this string
-     * is the text to draw.
-     *
-     * @param exampleString The example string attribute value to use.
-     *//*
-    public void setExampleString(String exampleString) {
-        mExampleString = exampleString;
-        invalidateTextPaintAndMeasurements();
-    }
-
-    *//**
-     * Gets the example color attribute value.
-     *
-     * @return The example color attribute value.
-     *//*
-    public int getExampleColor() {
-        return mExampleColor;
-    }
-
-    *//**
-     * Sets the view's example color attribute value. In the example view, this color
-     * is the font color.
-     *
-     * @param exampleColor The example color attribute value to use.
-     *//*
-    public void setExampleColor(int exampleColor) {
-        mExampleColor = exampleColor;
-        invalidateTextPaintAndMeasurements();
-    }
-
-    *//**
-     * Gets the example dimension attribute value.
-     *
-     * @return The example dimension attribute value.
-     *//*
-    public float getExampleDimension() {
-        return mExampleDimension;
-    }
-
-    *//**
-     * Sets the view's example dimension attribute value. In the example view, this dimension
-     * is the font size.
-     *
-     * @param exampleDimension The example dimension attribute value to use.
-     *//*
-    public void setExampleDimension(float exampleDimension) {
-        mExampleDimension = exampleDimension;
-        invalidateTextPaintAndMeasurements();
-    }
-
-    *//**
-     * Gets the example drawable attribute value.
-     *
-     * @return The example drawable attribute value.
-     *//*
-    public Drawable getExampleDrawable() {
-        return mExampleDrawable;
-    }
-
-    *//**
-     * Sets the view's example drawable attribute value. In the example view, this drawable is
-     * drawn above the text.
-     *
-     * @param exampleDrawable The example drawable attribute value to use.
-     *//*
-    public void setExampleDrawable(Drawable exampleDrawable) {
-        mExampleDrawable = exampleDrawable;
+        // commit the path to our offscreen
+        mCanvas.drawPath(mPath_receiver, mPaint_receiver);
+        // kill this so we don't double draw
+        mPath_receiver.reset();
     }
 }
-*/
+

@@ -173,7 +173,8 @@ public class DrawView extends View  {
                  * When finger is moved on the touch screen
                  * Continue the recording of touches
                  */
-                touch_move(x, y,mX,mY);
+                //touch_move(x, y,mX,mY);
+                touch_move(mX,mY,x,y);
                 invalidate();
 
                 //send it

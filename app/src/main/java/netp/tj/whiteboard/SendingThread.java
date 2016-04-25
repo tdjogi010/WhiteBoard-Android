@@ -47,8 +47,11 @@ public class SendingThread extends Thread {
                     if (!msgs.isEmpty()) {
                         String msg = msgs.remove();
                         if (msg != null) {
-                            dataOutputStream.writeUTF(msg);
-                            Log.d(TAG, "WriteUTF :" + msg);
+                            //dataOutputStream.writeUTF(msg);
+                            msg=msg+" 1.0\n";
+                            dataOutputStream.write(msg.getBytes("US-ASCII"));
+                            //Log.d(TAG, "WriteUTF :" + msg);
+                            Log.d(TAG, "Write :" + msg);
                         }
                     }
                 }catch (NoSuchElementException e){

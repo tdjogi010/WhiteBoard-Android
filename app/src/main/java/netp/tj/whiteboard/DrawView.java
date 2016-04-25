@@ -117,9 +117,14 @@ public class DrawView extends View  {
         float dy = Math.abs(y - mmY);
         //if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {//undo it maybe
             //Make bezier curve through the points
-            mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+            mPath.reset();
+            mPath.moveTo(x, y);
+            //mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+            mPath.quadTo(x, y, mmX, mmY);
             mX = x;
             mY = y;
+            mCanvas.drawPath(mPath, mPaint);
+            mPath.reset();
             //Log.d(TAG,"Touch_move : " + x + ","+ y + "  " + mX + "," + mY);
 
 

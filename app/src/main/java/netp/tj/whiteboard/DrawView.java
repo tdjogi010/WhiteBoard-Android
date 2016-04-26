@@ -106,23 +106,18 @@ public class DrawView extends View  {
         mY = y;
     }
 
-    /**
-     * Continue drawing. Function reused for both Create & Open Mode
-     * @param x x-coordinate
-     * @param y y-coordinate
-     */
-    private void touch_move(float x, float y,float mmX,float mmY) {
+    private void touch_move(float xold, float yold,float xnew,float ynew) {
 
-        float dx = Math.abs(x - mmX);
-        float dy = Math.abs(y - mmY);
+        float dx = Math.abs(xnew - xold);
+        float dy = Math.abs(ynew - yold);
         //if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {//undo it maybe
             //Make bezier curve through the points
             mPath.reset();
-            mPath.moveTo(x, y);
+            mPath.moveTo(xold, yold);
             //mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
-            mPath.quadTo(x, y, mmX, mmY);
-            mX = x;
-            mY = y;
+            mPath.quadTo(xold, yold, xnew, ynew);
+            mX = xnew;
+            mY = ynew;
             mCanvas.drawPath(mPath, mPaint);
             mPath.reset();
             //Log.d(TAG,"Touch_move : " + x + ","+ y + "  " + mX + "," + mY);
@@ -134,11 +129,11 @@ public class DrawView extends View  {
     /**
      * Stop drawing once finger lifted
      */
-    private void touch_up(float mX,float mY) {
-        //mPath.lineTo(mX, mY);
+    private void touch_up(float x,float y) {
+        //mPath.lineTo(x, y);
 
 
-        Log.d(TAG, "Touch_end : " + mX + "," + mY);
+        Log.d(TAG, "Touch_end : " + x + "," + y);
 
         // commit the path to our offscreen
         mCanvas.drawPath(mPath, mPaint);
@@ -174,18 +169,20 @@ public class DrawView extends View  {
                  * Continue the recording of touches
                  */
                 //touch_move(x, y,mX,mY);
+                float tx=mX, ty=mY;
                 touch_move(mX,mY,x,y);
                 invalidate();
 
                 //send it
-                drawViewListener.OnDrawn(mX,mY,x,y);
+                drawViewListener.OnDrawn(tx,ty,x,y);
                 break;
             case MotionEvent.ACTION_UP:
                 /*
                  * When finger is lifted from the touch screen
                  * Stop the recording of touches for this path
                  */
-                touch_up(mX,mY);
+                //touch_up(mX,mY);
+                touch_up(x,y);
                 invalidate();
                 //send it
                 drawViewListener.OnDrawn(true, x,y);

@@ -108,17 +108,25 @@ public class ConnectActivity extends Activity {
 
                 //while (true) {//TODO right now only for one client
                     socket = serverSocket.accept();
-                    /*dataInputStream = new DataInputStream(
+
+                    dataInputStream = new DataInputStream(
                             socket.getInputStream());
                     dataOutputStream = new DataOutputStream(
                             socket.getOutputStream());
 
-                    String messageFromClient = "";
+                    //String messageFromClient = "";
 
                     //If no message sent from client, this code will block the program
-                    messageFromClient = dataInputStream.readUTF();
+                    //messageFromClient = dataInputStream.readUTF();
+                byte[] buffer=new byte[1024];
+                Log.d(TAG,"Trying to read");
+                int size=dataInputStream.read(buffer);
+                Log.d(TAG,"read something...converting");
+                String wholeresponse= new String(buffer,0,size,"UTF-8");
+                Log.d(TAG,"req:"+wholeresponse);
 
-                    count++;
+
+                    /*count++;
                     message += "#" + count + " from " + socket.getInetAddress()
                             + ":" + socket.getPort() + "\n"
                             + "Msg from client: " + messageFromClient + "\n";*/
@@ -130,10 +138,12 @@ public class ConnectActivity extends Activity {
                             msg.setText(message);
                         }
                     });*/
-                    /*Log.d(TAG,message);
-
-                    String msgReply = "Hello from Android, you are #" + count;
-                    dataOutputStream.writeUTF(msgReply);*/
+                    //Log.d(TAG,message);
+                Log.d(TAG,"sending id");
+                String msg = "SUCCESS Your id is 1\n";
+                dataOutputStream.write(msg.getBytes("US-ASCII"));
+                    //String msgReply = "Hello from Android, you are #" + count;
+                    //dataOutputStream.writeUTF(msgReply);
                     ConnectActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

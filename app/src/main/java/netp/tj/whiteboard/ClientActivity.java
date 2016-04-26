@@ -45,6 +45,8 @@ public class ClientActivity extends Activity {
 
 
         welcomeMsg = (EditText)findViewById(R.id.welcomemsg);
+        welcomeMsg.setText("1");
+
 
         buttonConnect.setOnClickListener(buttonConnectOnClickListener);
 
@@ -88,10 +90,29 @@ public class ClientActivity extends Activity {
                     try {
                         socket = new Socket(editTextAddress
                                 .getText().toString(), Integer.parseInt(editTextPort.getText().toString()));
+                        //send welcome msg
+                        DataOutputStream  dataOutputStream = new DataOutputStream(
+                                socket.getOutputStream());
+                        dataOutputStream.write("1\n".getBytes("US-ASCII"));//hardcoded 1...remove this...take from welcomeMsg
+                        if (dataOutputStream != null) {
+                            //dataOutputStream.close();
+                        }
+                        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                        byte[] buffer=new byte[1024];
+                        Log.d(TAG,"Trying to read");
+                        int size=dataInputStream.read(buffer);
+                        final String response=new String(buffer,0,size,"UTF-8");
+                        Log.d(TAG,response);
+                        if (dataInputStream != null) {
+                            //dataInputStream.close();
+                        }
+
                         ClientActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                Toast.makeText(ClientActivity.this,response,Toast.LENGTH_SHORT).show();
                                 startMainActvity();
+
                                 /*startReceiving();
                                 startSending();*/
                             }

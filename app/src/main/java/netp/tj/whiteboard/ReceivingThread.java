@@ -23,6 +23,7 @@ public class ReceivingThread extends Thread {
     DataInputStream dataInputStream = null;
     Activity mActivity;
     String response = "";
+    String wholeresponse="";
 
     ReceivingThread(Socket s, Activity activity){
         socket=s;
@@ -40,24 +41,35 @@ public class ReceivingThread extends Thread {
 
         try {
             while (true) {
-                response = dataInputStream.readUTF();
+                //response = dataInputStream.readUTF();
+                //need to change
+                byte[] buffer=new byte[1024];
+                Log.d(TAG,"Trying to read");
+                int size=dataInputStream.read(buffer);
+                Log.d(TAG,"read something...converting");
+                wholeresponse= new String(buffer,0,size,"UTF-8");
+                Log.d(TAG,"Read response :" + wholeresponse);
+                String temp[]=wholeresponse.split("\n");
+                //Log.d(TAG,"ReadUTF response :" + response);
 
-                Log.d(TAG,"ReadUTF response :" + response);
-
-                String[] arr= response.split(" ");
-                if (arr.length == 4){
-                    EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_MOVE,
-                            Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                            Float.parseFloat(arr[2]),Float.parseFloat(arr[3])));
-                }else if (arr.length == 3){
-                    if (arr[2].equals("s")){
-                        EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_START,
+                for(String t:temp) {
+                    response=t;
+                    Log.d(TAG,"using response " + response);
+                    String[] arr = response.split(" ");
+                    if (arr.length >= 4) {
+                        EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_MOVE,
                                 Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                                0.0f, 0.0f));
-                    }else{
-                        EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_END,
-                                Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                                0.0f, 0.0f));
+                                Float.parseFloat(arr[2]), Float.parseFloat(arr[3])));
+                    } else if (arr.length == 3) {
+                        if (arr[2].equals("s")) {
+                            EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_START,
+                                    Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
+                                    0.0f, 0.0f));
+                        } else {
+                            EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_END,
+                                    Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
+                                    0.0f, 0.0f));
+                        }
                     }
                 }
 

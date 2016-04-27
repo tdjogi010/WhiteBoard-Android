@@ -45,19 +45,19 @@ public class ReceivingThread extends Thread {
                 Log.d(TAG,"ReadUTF response :" + response);
 
                 String[] arr= response.split(" ");
-                if (arr.length == 4){
+                if (arr.length == 6){
                     EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_MOVE,
                             Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                            Float.parseFloat(arr[2]),Float.parseFloat(arr[3])));
+                            Float.parseFloat(arr[2]),Float.parseFloat(arr[3]), Float.parseFloat(arr[4]), Integer.parseInt(arr[5])));
                 }else if (arr.length == 3){
                     if (arr[2].equals("s")){
                         EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_START,
                                 Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                                0.0f, 0.0f));
+                                0.0f, 0.0f, 0.0f, 0));
                     }else{
                         EventBus.getDefault().post(new SimulateDrawingEvent(SimulateDrawingEvent.SIMULATE_END,
                                 Float.parseFloat(arr[0]), Float.parseFloat(arr[1]),
-                                0.0f, 0.0f));
+                                0.0f, 0.0f, 0.0f, 0));
                     }
                 }
 

@@ -193,7 +193,7 @@ public class DrawView extends View  {
                 invalidate();
 
                 //send it
-                drawViewListener.OnDrawn(mX,mY,x,y);
+                drawViewListener.OnDrawn(mX,mY,x,y, mPaint.getStrokeWidth(), mPaint.getColor());
                 break;
             case MotionEvent.ACTION_UP:
                 /*
@@ -209,8 +209,10 @@ public class DrawView extends View  {
         return true;
     }
 
-    void simulateDraw(float oldx,float oldy,float newx,float newy){
-        Log.d(TAG,"simulating"+oldx+" "+oldy+" "+newx+" "+newy);
+    void simulateDraw(float oldx,float oldy,float newx,float newy, float width, int color){
+        Log.d(TAG,"simulating"+oldx+" "+oldy+" "+newx+" "+newy + ",Width & Color:" + width + "," + color );
+        mPaint_receiver.setStrokeWidth(width);
+        mPaint_receiver.setColor(color);
         simulateTouchMove(newx,newy,oldx,oldy);
         invalidate();
 

@@ -14,14 +14,33 @@ public class SimulateDrawingEvent {
     private float coord2;
     private float coord3;
     private float coord4;
+    private float width;
+    private int color;
 
-
-    public SimulateDrawingEvent(int mode, float coord1, float coord2, float coord3, float coord4) {
+    public SimulateDrawingEvent(int mode, float coord1, float coord2, float coord3, float coord4, float width, int color) {
         this.mode = mode;
         this.coord1 = coord1;
         this.coord2 = coord2;
         this.coord3 = coord3;
         this.coord4 = coord4;
+        this.width = width;
+        this.color = color;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
     }
 
     public int getMode() {

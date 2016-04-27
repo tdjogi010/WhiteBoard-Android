@@ -76,8 +76,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
         drawViewListener= new DrawViewListener() {
             @Override
-            public void OnDrawn(float oldx, float oldy, float newx, float newy) {
-                String msg=oldx+" "+oldy+" "+newx+" "+newy;
+            public void OnDrawn(float oldx, float oldy, float newx, float newy, float width, int color) {
+                String msg=oldx+" "+oldy+" "+newx+" "+newy + " " + width + " " + color;
                 //Log.d(TAG,msg);
                 //give it to sending
                 queue.add(msg);
@@ -186,7 +186,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void simulateDrawing(SimulateDrawingEvent event){
         if (event.getMode() == SimulateDrawingEvent.SIMULATE_MOVE){
-            drawView.simulateDraw(event.getCoord1(), event.getCoord2(), event.getCoord3(), event.getCoord4());
+            drawView.simulateDraw(event.getCoord1(), event.getCoord2(), event.getCoord3(), event.getCoord4(), event.getWidth(), event.getColor());
         } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_START){
             drawView.simulateStart(event.getCoord1(), event.getCoord2());
         } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_END){

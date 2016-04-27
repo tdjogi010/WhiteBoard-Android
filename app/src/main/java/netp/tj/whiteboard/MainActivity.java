@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -43,6 +44,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     Spinner spinner_color;
     Spinner spinner_text_size;
 
+    Button bt_next;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +139,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 //        colors_map.put("Black", Color.BLACK);
 
 
+        bt_next = (Button) findViewById(R.id.bt_next);
+        bt_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                nextPage();
+            }
+        });
+
         startReceiving();
         startSending();
 
@@ -194,6 +204,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
             drawView.simulateStart(event.getCoord1(), event.getCoord2());
         } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_END){
             drawView.simulateEnd(event.getCoord1(), event.getCoord2());
+        } else if (event.getMode() == -1){
+            drawView.nextPage();
         }
     }
 
@@ -227,6 +239,13 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void nextPage(){
+        drawView.nextPage();
+
+        String msg = "Clear canvas";
+        queue.add(msg);
     }
 
 

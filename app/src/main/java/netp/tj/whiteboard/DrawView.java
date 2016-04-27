@@ -3,9 +3,12 @@ package netp.tj.whiteboard;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
 import android.os.Environment;
+import android.provider.SyncStateContract;
 import android.util.Log;
 import android.view.View;
 
@@ -13,13 +16,15 @@ import android.view.View;
 
 import android.view.MotionEvent;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class DrawView extends View  {
 
-    FileOutputStream fos = null;
-    Bitmap bmpBase = null;
+    private FileOutputStream fos = null;
+
+    private Context mContext;
 
     private static final String TAG = "DrawView";
     /*
@@ -76,6 +81,7 @@ public class DrawView extends View  {
 
     public DrawView(Context context,Paint mPaint, Paint mPaint_receiver, DrawViewListener dl) {
         super(context);
+        this.mContext = context;
         mPath = new Path();
         mPath_receiver = new Path();
         this.mPaint = mPaint;
@@ -85,7 +91,6 @@ public class DrawView extends View  {
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-//        bmpBase = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
     }
 
     @Override
@@ -124,7 +129,14 @@ public class DrawView extends View  {
     public void saveBitmap(){
         try
         {
-            fos = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath()+"/" + System.currentTimeMillis()+".png");
+
+//          File file = new File(mContext.getExternalFilesDir(null)
+//                    + File.separator + System.currentTimeMillis()+".png");
+            File path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES);
+            File file = new File(path, System.currentTimeMillis()+".png");
+            path.mkdirs();
+            fos = new FileOutputStream(file);
             mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
 
             fos.flush();
@@ -317,6 +329,17 @@ public class DrawView extends View  {
         mCanvas.drawPath(mPath_receiver, mPaint_receiver);
         // kill this so we don't double draw
         mPath_receiver.reset();
+    }
+
+
+    public void clearCanvas(){
+        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        invalidate();
+    }
+
+    public void nextPage(){
+        saveBitmap();
+        clearCanvas();
     }
 }
 

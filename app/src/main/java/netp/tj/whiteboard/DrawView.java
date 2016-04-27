@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
@@ -12,7 +13,14 @@ import android.view.View;
 
 import android.view.MotionEvent;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class DrawView extends View  {
+
+    FileOutputStream fos = null;
+    Bitmap bmpBase = null;
+
     private static final String TAG = "DrawView";
     /*
          * Bitmap to hold the pixels
@@ -76,6 +84,8 @@ public class DrawView extends View  {
         drawViewListener=dl;
         setFocusable(true);
         setFocusableInTouchMode(true);
+
+//        bmpBase = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
     }
 
     @Override
@@ -111,6 +121,36 @@ public class DrawView extends View  {
         canvas.drawPath(mPath_receiver, mPaint_receiver);
     }
 
+    public void saveBitmap(){
+        try
+        {
+            fos = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath()+"/" + System.currentTimeMillis()+".png");
+            mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+
+            fos.flush();
+            fos.close();
+            fos = null;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (fos != null)
+            {
+                try
+                {
+                    fos.close();
+                    fos = null;
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     /**
      * Start of drawing upon touch. Function reused in both Craete & Open Mode

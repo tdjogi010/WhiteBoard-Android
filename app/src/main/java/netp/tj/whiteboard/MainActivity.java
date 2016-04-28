@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,6 +47,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
     Button bt_next;
 
+    int width,height;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +85,12 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         drawViewListener= new DrawViewListener() {
             @Override
             public void OnDrawn(float oldx, float oldy, float newx, float newy, float width, int color) {
+                //scale down
+                oldx=oldx/width;
+                oldy=oldy/height;
+                newx=newx/width;
+                newy=newy/height;
+
                 String msg=oldx+" "+oldy+" "+newx+" "+newy + " " + width + " " + color;
                 //Log.d(TAG,msg);
                 //give it to sending
@@ -90,7 +99,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
             @Override
             public void OnDrawn(boolean startOrEnd, float x, float y) {
-
+                //scale down
+                x=x/width;
+                y=y/height;
                 String msg=x+" "+y;
                 if(startOrEnd){
                     msg += " e";
@@ -101,7 +112,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
             }
         };
         drawView= new DrawView(this, mPaint, mPaint_receiver, drawViewListener);
-        ((FrameLayout) findViewById(R.id.main_ll)).addView(drawView, 0);
+        FrameLayout fl= ((FrameLayout) findViewById(R.id.main_ll));
+        fl.addView(drawView, 0);
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        height = displaymetrics.heightPixels;
+        width = displaymetrics.widthPixels;
+        Log.d(TAG,height+" "+width );
+
 
         spinner_text_size = (Spinner)findViewById(R.id.spinner_text_size);
         spinner_color = (Spinner)findViewById(R.id.spinner_color);
@@ -199,10 +217,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void simulateDrawing(SimulateDrawingEvent event){
         if (event.getMode() == SimulateDrawingEvent.SIMULATE_MOVE){
-            drawView.simulateDraw(event.getCoord1(), event.getCoord2(), event.getCoord3(), event.getCoord4(), event.getWidth(), event.getColor());
+            //scale up
+            drawView.simulateDraw(event.getCoord1()*width, event.getCoord2()*height, event.getCoord3()*width, event.getCoord4()*height,event.getWidth(),event.getColor());
+            //drawView.simulateDraw(event.getCoord1(), event.getCoord2(), event.getCoord3(), event.getCoord4(), event.getWidth(), event.getColor());
         } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_START){
-            drawView.simulateStart(event.getCoord1(), event.getCoord2());
+            drawView.simulateStart(event.getCoord1()*width, event.getCoord2()*height);
+            //drawView.simulateStart(event.getCoord1(), event.getCoord2());
         } else if (event.getMode() == SimulateDrawingEvent.SIMULATE_END){
+            drawView.simulateEnd(event.getCoord1()*width, event.getCoord2()*height);
             drawView.simulateEnd(event.getCoord1(), event.getCoord2());
         } else if (event.getMode() == -1){
             drawView.nextPage();

@@ -84,14 +84,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
         drawViewListener= new DrawViewListener() {
             @Override
-            public void OnDrawn(float oldx, float oldy, float newx, float newy, float width, int color) {
+            public void OnDrawn(float oldx, float oldy, float newx, float newy, float stroke_width, int color) {
                 //scale down
                 oldx=oldx/width;
                 oldy=oldy/height;
                 newx=newx/width;
                 newy=newy/height;
 
-                String msg=oldx+" "+oldy+" "+newx+" "+newy + " " + width + " " + color;
+                String msg=oldx+" "+oldy+" "+newx+" "+newy + " " + stroke_width + " " + color;
                 //Log.d(TAG,msg);
                 //give it to sending
                 queue.add(msg);
